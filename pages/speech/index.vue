@@ -14,15 +14,19 @@
 			</view>
 		</view>
 		<view class="uni-textarea view_text" v-bind:style="{display:(display_ctn == 'text' ? 'block' : 'none')}">
-			<textarea  placeholder="请输入文本" maxlength="-1" v-model="text"/>
+			<textarea  placeholder="请输入文本" maxlength="-1" v-model="text" :disabled="loading"/>
 		</view>
 		<view class="uni-form-item uni-column view_url" v-bind:style="{display:(display_ctn == 'link' ? 'block' : 'none')}">
-			<input class="uni-input" placeholder="请输入链接" maxlength="300" v-model="link"/>
+			<input class="uni-input" placeholder="请输入链接" maxlength="300" v-model="link" :readonly="loading"/>
 		</view>
 		
 		<view class="uni-padding-wrap uni-common-mt btn">
             <button type="primary" size="mini" @click="toSpeech()">在线试听</button>
         </view>
+		
+		<view class="uni-padding-wrap uni-common-mt btn">
+		    <button type="default" size="mini" @click="toCenter()">个人中心</button>
+		</view>
 		
 		<uni-popup ref="popup" type="center">{{error}}</uni-popup>
 		
@@ -61,15 +65,22 @@
 				text:"",
 				link:"",
 				loading:false,
-				error:"",
-				global_url:"https://miniapi.calron.cn/",
-				bgAudioMannager : "",
-				innerAudioContext :""
+				error:""
 			}
 		},
 		onLoad() {
-			this.bgAudioMannager = uni.getBackgroundAudioManager();
-//			this.innerAudioContext = uni.createInnerAudioContext();
+			if(!uni.getStorageSync("user")){
+				uni.showToast({
+					title: '请先登录',
+					icon: 'none',
+					duration: 1000
+				});
+				setTimeout(function() {
+					uni.switchTab({
+						url: '../my/index'
+					});
+				}, 1000);
+			}
 		},
 		methods: {
 			checkboxChange: function (e) {
@@ -113,9 +124,46 @@
 					this.error = "请输入文本或者链接";
 					return false;
 				}
+				
+				var curr = null;
+				var items = this.items;
+				for (var i = 0, lenI = items.length; i < lenI; ++i) {
+				    const item = items[i]
+					if(item.checked){
+					    curr = item.value;
+						break;
+					}
+				}	
+				console.log(curr);
+				var textVal = "";
+				var linkVal = "";
+				
+				if(curr == "link"){
+					if(!this.link){
+						this.$refs.popup.open();
+						this.error = "请输入链接";
+						return false;
+					}else{
+						linkVal = this.link;
+					}
+				}else if(curr == "text"){
+					if(!this.text){
+						this.$refs.popup.open();
+						this.error = "请输入文本";
+						return false;
+					}else{
+						textVal = this.text;
+					}
+				}else{
+					this.$refs.popup.open();
+					this.error = "请输入文本或者链接";
+					return false;
+				}
+				
+				
 				this.$refs.popup_loading.open();
 				var _this = this;
-				var json = {text:this.text,url:this.link};
+				var json = {text:textVal,url:linkVal,openid:uni.getStorageSync("openid")};
 				uni.request({
 					url:  _this.global_url + 'convert',
 					data: JSON.stringify(json),
@@ -128,29 +176,9 @@
 						var mp3Path =  res.data.obj;
 						var total = mp3Path.split("/");
 						var filePath = total[total.length-1];
-						
-						// _this.innerAudioContext.autoplay = true;
-						// _this.innerAudioContext.src = _this.global_url + 'static/audio/mp3/' + filePath;
-						// _this.innerAudioContext.onPlay(() => {
-						//   console.log('开始播放');
-						// });
-						// _this.innerAudioContext.onError((res) => {
-						//   console.log(res.errMsg);
-						//   console.log(res.errCode);
-						// });
-						
-						// _this.bgAudioMannager.epname = "飞樱专辑";
-						// _this.bgAudioMannager.title = '跳跳语音';
-						// _this.bgAudioMannager.singer = '跳跳';
-						// _this.bgAudioMannager.coverImgUrl = _this.global_url + 'static/image/icon/music.png';
-						// _this.bgAudioMannager.src = _this.global_url + 'static/audio/mp3/' + filePath;
-						
-						_this.bgAudioMannager.title = '飞樱专辑'
-						_this.bgAudioMannager.epname = '跳跳语音'
-						_this.bgAudioMannager.singer = '跳跳'
-						_this.bgAudioMannager.coverImgUrl =  _this.global_url + 'static/image/audio.jpg'
+								
 						// 设置了 src 之后会自动播放
-						_this.bgAudioMannager.src = _this.global_url + 'static/audio/mp3/' + filePath;
+						_this.global_bgAudioMannager.src = _this.global_url + 'static/audio/mp3/' + filePath;
 						
 						_this.$refs.popup_loading.close();
 					},
@@ -160,6 +188,11 @@
 						_this.$refs.popup.open();
 						return false;
 					}
+				});
+			},
+			toCenter(){
+				uni.switchTab({
+					url: '../my/index'
 				});
 			}
 		}
