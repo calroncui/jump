@@ -28,15 +28,27 @@
 					<text class="text_desc">{{item.title}}</text>
 					<text class="time">{{item.createTime.substring(0,16)}}</text>
 				</view>
-				<button class="mini-btn online" type="default" size="mini" @click="online(item.audioUrl)">在线收听</button>
-				<button class="mini-btn download" type="primary" size="mini" @click="download(item.audioUrl)" disabled="true" plain="true">下载本地</button>
+				<button class="mini-btn online" type="primary" size="mini" plain="true" @click="online(item.audioUrl)">在线收听</button>
+				<button class="mini-btn copy" type="primary" size="mini" plain="true" @click="copyUrl(item.audioUrl)">复制地址</button>
+				<button class="mini-btn download" type="default" size="mini" @click="download(item.audioUrl)" disabled="true" plain="true">下载本地</button>
 			</view>
 		</view>
+		
+		<uni-popup ref="popup" type="center">{{error}}</uni-popup>
+		
+		<uni-popup ref="popup_loading" type="center" :maskClick="maskClick">
+			<view class="loading_ctn">
+				<img src="/static/img/loading.gif"/>
+				<p>{{loading_text}}</p>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
 <script>
+	import uniPopup from "@/components/uni-popup/uni-popup.vue"
 	export default {
+		components: {uniPopup},
 		data() {
 			return {
 				title: '我的',
@@ -46,7 +58,10 @@
 				},
 				loginBtn:"",
 				loginFlag:false,
-				list:[]
+				maskClick:false,
+				loading_text:"",
+				list:[],
+				error:""
 			}
 		},
 		onLoad() {
@@ -86,13 +101,18 @@
 										console.log(res.data);
 										_this.list = res.data.obj;
 									},
-									error:(res) => {
-										
+									fail:(res) => {
+										_this.error = "获取历史数据失败";
+										_this.$refs.popup.open();
+										return false;
 									}
 								});
 								
 							},
-							error:(res) => {
+							fail:(res) => {
+								_this.error = "获取openid失败";
+								_this.$refs.popup.open();
+								return false;
 							}
 						});
 					  }
@@ -110,8 +130,10 @@
 							console.log(res.data);
 							_this.list = res.data.obj;
 						},
-						error:(res) => {
-							
+						fail:(res) => {
+							_this.error = "获取openid失败";
+							_this.$refs.popup.open();
+							return false;
 						}
 					});
 				}
@@ -162,8 +184,9 @@
 			},
 			download(){
 				return false;
+				let _this = this;
 				uni.downloadFile({
-					url: 'https://miniapi.calron.cn/static/audio/mp3/1564966594862.wav', 
+					url: 'https://miniapi.calron.cn/static/audio/mp3/1566378035077.wav', 
 					success: (res) => {
 						if (res.statusCode === 200) {
 							console.log('下载成功:'+res.tempFilePath);
@@ -177,13 +200,29 @@
 						}
 					}
 				});
+				
+				uni.getSavedFileList({
+				  success: function (res) {
+					console.log(res.fileList);
+				  }
+				});
 			},
 			online(url){
 				var _this = this;
-				var total = url.split("/");
-				var filePath = total[total.length-1];
 				// 设置了 src 之后会自动播放
-				_this.global_bgAudioMannager.src = _this.global_url + 'static/audio/mp3/' + filePath;
+				_this.global_bgAudioMannager.src = _this.getAudioUrl(url);
+			},
+			copyUrl(url){
+				var _this = this;
+				uni.setClipboardData({
+					data: _this.getDownloadUrl(url),
+					success: function () {
+						
+					},
+					fail:function(){
+						
+					}
+				});
 			}
 		}
 	}
@@ -271,14 +310,28 @@
 		overflow:hidden;
 		text-overflow:ellipsis;
 		width:60%;
+		text-align: left;
 	}
 	
-	.download{
+	.download,.copy{
 		margin-left: 10upx;
 	}
 	
 	.flex-item-V{
 		height: 120upx;
 		border-bottom: 1px solid #e5e5e5;
+	}
+	
+	.loading_ctn{
+		text-align: center;
+	}
+	
+	.loading_ctn img{
+		width: 100upx;
+		height: 100upx;
+	}
+	
+	.loading_ctn p{
+		margin-top: 30upx;
 	}
 </style>

@@ -25,7 +25,7 @@
         </view>
 		
 		<view class="uni-padding-wrap uni-common-mt btn">
-		    <button type="default" size="mini" @click="toCenter()">个人中心</button>
+		    <button type="default" size="mini" plain="true" @click="toCenter()">个人中心</button>
 		</view>
 		
 		<uni-popup ref="popup" type="center">{{error}}</uni-popup>
@@ -173,16 +173,12 @@
 					method:'POST',
 					success: (res) => {
 						console.log(res.data);
-						var mp3Path =  res.data.obj;
-						var total = mp3Path.split("/");
-						var filePath = total[total.length-1];
-								
 						// 设置了 src 之后会自动播放
-						_this.global_bgAudioMannager.src = _this.global_url + 'static/audio/mp3/' + filePath;
+						_this.global_bgAudioMannager.src = _this.getAudioUrl(res.data.obj);
 						
 						_this.$refs.popup_loading.close();
 					},
-					error:(res) => {
+					fail:(res) => {
 						_this.$refs.popup_loading.close();
 						_this.error = "请求失败，请重试";
 						_this.$refs.popup.open();
