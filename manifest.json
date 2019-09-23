@@ -63,7 +63,13 @@
             "urlCheck" : false
         },
         "usingComponents" : true,
-		"requiredBackgroundModes": ["audio","backgroundAudioManager"]
+		"requiredBackgroundModes": ["audio","backgroundAudioManager"],
+		"plugins": {
+			"WechatSI": {
+			  "version": "0.3.1",
+			  "provider": "wx069ba97219f66d99"
+			}
+		}
     },
     "mp-alipay" : {
         "usingComponents" : true

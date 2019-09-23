@@ -11,6 +11,9 @@ Vue.prototype.global_bgAudioMannager.epname = '跳跳语音'
 Vue.prototype.global_bgAudioMannager.singer = '跳跳'
 Vue.prototype.global_bgAudioMannager.coverImgUrl =  Vue.prototype.global_url + 'static/image/audio.jpg'
 
+var plugin = requirePlugin("WechatSI")  
+Vue.prototype.global_record_rec_manager = plugin.getRecordRecognitionManager();
+
 Vue.prototype.getAudioUrl = function(url){
 	var total = url.split("/");
 	var filePath = total[total.length-1];

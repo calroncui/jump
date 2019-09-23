@@ -11,6 +11,11 @@
 				"navigationBarTitleText": "文字转语音"
 			}
 		},{
+			"path": "pages/online_transfer/index",
+			"style": {
+				"navigationBarTitleText": "同声传译"
+			}
+		},{
 			"path": "pages/my/index",
 			"style": {
 				"navigationBarTitleText": "我的"
