@@ -11,4 +11,4 @@
 5. 实时语音转文字
 6. 后台播放  
 
-<div align=center><img src="http://static.calron.cn/image/tools_minipgm.jpg" width="400"/></div>  
+小程序码链接：  http://static.calron.cn/image/tools_minipgm.jpg
